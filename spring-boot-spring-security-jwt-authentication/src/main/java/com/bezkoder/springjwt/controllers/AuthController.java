@@ -1,5 +1,6 @@
 package com.bezkoder.springjwt.controllers;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,21 +55,25 @@ public class AuthController {
 	@PostMapping("/signin")
 	public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
 
-		Authentication authentication = authenticationManager.authenticate(
+		/*Authentication authentication = authenticationManager.authenticate(
 				new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
 
-		SecurityContextHolder.getContext().setAuthentication(authentication);
-		String jwt = jwtUtils.generateJwtToken(authentication);
-		
-		UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();		
-		List<String> roles = userDetails.getAuthorities().stream()
-				.map(item -> item.getAuthority())
-				.collect(Collectors.toList());
+		SecurityContextHolder.getContext().setAuthentication(authentication);*/
+
+		User user = userRepository.findByUsername(loginRequest.getUsername());
+		String jwt = jwtUtils.generateJwtToken(user);
+
+		List<String> roles = new ArrayList<>();
+		// UserDetailsImpl userDetails = (UserDetailsImpl) authentication.getPrincipal();
+        for (Role r : user.getRoles()
+             ) {
+            roles.add(r.toString());
+        }
 
 		return ResponseEntity.ok(new JwtResponse(jwt, 
-												 userDetails.getId(), 
-												 userDetails.getUsername(), 
-												 userDetails.getEmail(), 
+												 user.getId(),
+												 user.getUsername(),
+												 user.getEmail(),
 												 roles));
 	}
 
